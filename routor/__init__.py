@@ -90,13 +90,13 @@ class Manager(object):
             elif ev.status == StreamStatus.FAILED:
                 cid = self.cleanup_stream(sid)
                 if cid is not None:
-                    self.cleanup_circuit(cid, failed=True)
+                    self.cleanup_circuit(cid) # failed=True?
 
             elif ev.status == StreamStatus.DETACHED:
                 self.ctrl.close_stream(sid)
                 cid = self.cleanup_stream(sid)
                 if cid is not None:
-                    self.cleanup_circuit(cid, failed=True)
+                    self.cleanup_circuit(cid) # failed=True?
 
             elif ev.status == StreamStatus.CLOSED:
                 cid = self.cleanup_stream(sid)

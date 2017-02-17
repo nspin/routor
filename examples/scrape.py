@@ -5,7 +5,7 @@ import logging
 from stem.control import Controller, EventType
 
 from routor import Manager
-from routor.chooser import MolePathChooser
+from routor.chooser import ScrapePathChooser
 
 
 class JustManagers(object):
@@ -21,7 +21,7 @@ root.setLevel(logging.DEBUG)
 middle = '379FB450010D17078B3766C2273303C358C3A442'
 ctrl = Controller.from_port(port=9051)
 ctrl.authenticate()
-man = Manager(ctrl, MolePathChooser(ctrl, middle))
+man = Manager(ctrl, ScrapePathChooser(ctrl, middle))
 
 while True:
     time.sleep(100)
