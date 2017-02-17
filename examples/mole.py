@@ -25,4 +25,3 @@ man = Manager(ctrl, MolePathChooser(ctrl, middle))
 
 while True:
     time.sleep(100)
-
