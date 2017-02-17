@@ -22,6 +22,7 @@ middle = '379FB450010D17078B3766C2273303C358C3A442'
 ctrl = Controller.from_port(port=9051)
 ctrl.authenticate()
 man = Manager(ctrl, ScrapePathChooser(ctrl, middle))
+man.start()
 
 while True:
     time.sleep(100)

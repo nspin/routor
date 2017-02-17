@@ -10,12 +10,12 @@ def can_exit(rstat):
             ])
 
 
-class LamePathChooser(object):
+class ConstPathChooser(object):
 
     def __init__(self, path):
         self.path = path
 
-    def take(self):
+    def take(self, stream_event):
         return self.path
 
     def release(self, path, failed=False):
@@ -38,7 +38,7 @@ class PerspectivesPathChooser(object):
         return ('FAST' in rstat.flags, rstat.bandwidth)
 
 
-    def take(self):
+    def take(self, stream_event):
         def f(rstat):
             return can_exit(rstat) and self.check(rstat.fingerprint)
         exit = max(filter(f, self.ctrl.get_network_statuses()), key=self.score).fingerprint
@@ -77,7 +77,7 @@ class ScrapePathChooser(object):
         return ('FAST' in rstat.flags, rstat.bandwidth)
 
 
-    def take(self):
+    def take(self, stream_event):
         def f(rstat):
             return can_exit(rstat) and self.check(rstat.fingerprint)
         exit = max(filter(f, self.ctrl.get_network_statuses()), key=self.score).fingerprint

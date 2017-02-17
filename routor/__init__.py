@@ -22,13 +22,34 @@ class Manager(object):
 
         self.lock = RLock()
 
+        self.started = False
+        self.stopped = False
+
+
+    def start(self):
+        if self.started:
+            raise ValueError('{} already started.'.format(self))
+        if self.stopped:
+            raise ValueError('{} already stopped.'.format(self))
         self.ctrl.add_event_listener(self.handle_stream, EventType.STREAM)
         self.ctrl.add_event_listener(self.handle_circuit, EventType.CIRC)
+        self.started = True
+    
+
+    def stop(self):
+        if not self.started:
+            raise ValueError('{} not yet started.'.format(self))
+        if self.stopped:
+            raise ValueError('{} already stopped.'.format(self))
+        self.ctrl.add_event_listener(self.handle_stream)
+        self.ctrl.add_event_listener(self.handle_circuit)
+        self.stopped = True
 
 
-    def assign_stream(self, sid):
+    def assign_stream(self, stream_event):
         with self.lock:
-            path = self.path_chooser.take()
+            sid = stream_event.id
+            path = self.path_chooser.take(stream_event)
             self.logger.info('chose path %s for sid %s', path, sid)
             for circ in self.ctrl.get_circuits():
                 if circ.path == path:
@@ -85,7 +106,7 @@ class Manager(object):
             sid = ev.id
 
             if ev.status == StreamStatus.NEW:
-                self.assign_stream(sid)
+                self.assign_stream(ev)
 
             elif ev.status == StreamStatus.FAILED:
                 cid = self.cleanup_stream(sid)
