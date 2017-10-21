@@ -1,3 +1,5 @@
+"""Tor controller that allows paths to be chosen on a stream-by-stream basis."""
+
 from bidict import bidict
 from threading import RLock
 
@@ -9,6 +11,18 @@ logger = logging.getLogger(__name__)
 
 
 class Manager(object):
+    """
+    Uses a path chooser object to control Tor through a ``stem.control.Controller``.
+    
+    A path chooser is an object with the following methods:
+
+        take(stream_event: stem.response.events.StreamEvent) -> path: tuple of fingerprints
+            Called to assign a path to a new stream. If a circuit with this path already exists,
+            it is re-used, otherwise a new circuit is created.
+
+        release(path: tuple of fingerprints, failed=False)
+            Called when a stream is closed with the path of that stream.
+    """
 
     def __init__(self, ctrl, path_chooser):
 
@@ -27,23 +41,57 @@ class Manager(object):
 
 
     def start(self):
+        """Start managing paths."""
         if self.started:
             raise ValueError('{} already started.'.format(self))
-        if self.stopped:
-            raise ValueError('{} already stopped.'.format(self))
         self.ctrl.add_event_listener(self.handle_stream, EventType.STREAM)
         self.ctrl.add_event_listener(self.handle_circuit, EventType.CIRC)
         self.started = True
     
 
     def stop(self):
+        """Start managing paths."""
         if not self.started:
             raise ValueError('{} not yet started.'.format(self))
         if self.stopped:
             raise ValueError('{} already stopped.'.format(self))
-        self.ctrl.add_event_listener(self.handle_stream)
-        self.ctrl.add_event_listener(self.handle_circuit)
+        self.ctrl.remove_event_listener(self.handle_stream)
+        self.ctrl.remove_event_listener(self.handle_circuit)
         self.stopped = True
+
+
+    def handle_stream(self, ev):
+        with self.lock:
+            self.logger.info(ev)
+            sid = ev.id
+            if ev.status == StreamStatus.NEW:
+                self.assign_stream(ev)
+            elif ev.status == StreamStatus.FAILED:
+                cid = self.cleanup_stream(sid)
+                if cid is not None:
+                    self.cleanup_circuit(cid) # failed=True?
+            elif ev.status == StreamStatus.DETACHED:
+                self.ctrl.close_stream(sid)
+                cid = self.cleanup_stream(sid)
+                if cid is not None:
+                    self.cleanup_circuit(cid) # failed=True?
+            elif ev.status == StreamStatus.CLOSED:
+                cid = self.cleanup_stream(sid)
+                if cid is not None:
+                    self.cleanup_circuit(cid)
+
+
+    def handle_circuit(self, ev):
+        with self.lock:
+            self.logger.info(ev)
+            cid = ev.id
+            if ev.status == CircStatus.BUILT:
+                self.circuit_built(cid)
+            elif ev.status == CircStatus.FAILED:
+                sid = self.cleanup_circuit(cid, failed=True)
+                if sid is not None:
+                    self.ctrl.close_stream(sid)
+                    self.cleanup_stream(sid)
 
 
     def assign_stream(self, stream_event):
@@ -98,43 +146,3 @@ class Manager(object):
                 sid = self.attached.inb[cid]
                 del self.attached[sid]
             return sid
-
-
-    def handle_stream(self, ev):
-        with self.lock:
-            self.logger.info(ev)
-            sid = ev.id
-
-            if ev.status == StreamStatus.NEW:
-                self.assign_stream(ev)
-
-            elif ev.status == StreamStatus.FAILED:
-                cid = self.cleanup_stream(sid)
-                if cid is not None:
-                    self.cleanup_circuit(cid) # failed=True?
-
-            elif ev.status == StreamStatus.DETACHED:
-                self.ctrl.close_stream(sid)
-                cid = self.cleanup_stream(sid)
-                if cid is not None:
-                    self.cleanup_circuit(cid) # failed=True?
-
-            elif ev.status == StreamStatus.CLOSED:
-                cid = self.cleanup_stream(sid)
-                if cid is not None:
-                    self.cleanup_circuit(cid)
-
-
-    def handle_circuit(self, ev):
-        with self.lock:
-            self.logger.info(ev)
-            cid = ev.id
-
-            if ev.status == CircStatus.BUILT:
-                self.circuit_built(cid)
-
-            elif ev.status == CircStatus.FAILED:
-                sid = self.cleanup_circuit(cid, failed=True)
-                if sid is not None:
-                    self.ctrl.close_stream(sid)
-                    self.cleanup_stream(sid)

@@ -38,5 +38,3 @@ The output of this last command should be a stream of different IP addresses (an
 62.210.245.138
 94.242.246.23
 ```
-
-## MORE DOCUMENTATION SOON

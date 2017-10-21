@@ -7,22 +7,17 @@ from stem.control import Controller, EventType
 from routor import Manager
 from routor.chooser import ScrapePathChooser
 
-
-class JustManagers(object):
-    def filter(self, record):
-        return 1 if 'Manager object' in record.name else 0
-
 root = logging.getLogger()
 hdlr = logging.StreamHandler(sys.stderr)
-hdlr.addFilter(JustManagers())
+hdlr.addFilter(logging.Filter('routor'))
 root.addHandler(hdlr)
 root.setLevel(logging.DEBUG)
 
-middle = '379FB450010D17078B3766C2273303C358C3A442'
+# middle = '379FB450010D17078B3766C2273303C358C3A442'
+middle = 'BC630CBBB518BE7E9F4E09712AB0269E9DC7D626'
 ctrl = Controller.from_port(port=9051)
 ctrl.authenticate()
-man = Manager(ctrl, ScrapePathChooser(ctrl, middle))
-man.start()
+Manager(ctrl, ScrapePathChooser(ctrl, middle)).start()
 
 while True:
-    time.sleep(100)
+    time.sleep(1337)
