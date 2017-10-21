@@ -5,7 +5,7 @@ import logging
 from stem.control import Controller, EventType
 
 from routor import Manager
-from routor.chooser import ScrapePathChooser
+from routor.choosers import ScrapePathChooser
 
 root = logging.getLogger()
 hdlr = logging.StreamHandler(sys.stderr)
