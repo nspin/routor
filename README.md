@@ -2,7 +2,9 @@
 
 Tor controller that allows paths to be chosen on a stream-by-stream basis.
 
-Requires `stem`, tested with `Python3.4` and `stem-1.5.4`.
+Requires the Python packages `stem` and `bidict`.
+Tested with `Tor 0.3.2.9`, `Python 3.6.4`, `stem-1.6.0`, and `bidict-0.13.0`.
+
 
 ## Usage
 

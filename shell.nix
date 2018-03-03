@@ -12,10 +12,10 @@ let
   };
 
   stem = with python3Packages; buildPythonPackage rec {
-    name = "stem-1.5.4";
+    name = "stem-1.6.0";
     src = fetchurl {
-      url = "mirror://pypi/s/stem/stem-1.5.4.tar.gz";
-      sha256 = "1j7pnblrn0yr6jmxvsq6y0ihmxmj5x50jl2n2606w67f6wq16j9n";
+      url = "mirror://pypi/s/stem/${name}.tar.gz";
+      sha256 = "1va9p3ij7lxg6ixfsvaql06dn11l3fgpxmss1dhlvafm7sqizznp";
     };
     doCheck = false;
     buildInputs = lib.optional (!stdenv.isDarwin) tor;
