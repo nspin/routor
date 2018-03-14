@@ -62,7 +62,6 @@ class PerspectivesPathChooser(object):
 
     def release(self, path, failed=False):
         exit = path[-1]
-        self.history.remove(exit)
         if failed:
             self.bad.add(exit)
 
