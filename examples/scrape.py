@@ -1,11 +1,8 @@
 import sys
 import time
 import logging
-
 from stem.control import Controller
-
-from routor import Manager
-from routor.choosers import PerspectivesPathChooser
+from routor import Manager, PerspectivesPathChooser
 
 root = logging.getLogger()
 hdlr = logging.StreamHandler(sys.stderr)

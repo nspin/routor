@@ -26,7 +26,6 @@ in stdenv.mkDerivation {
   name = "env";
   buildInputs = [
     python3
-    python3Packages.requests
     bidict
     stem
   ] ++ lib.optional (!stdenv.isDarwin) tor;
