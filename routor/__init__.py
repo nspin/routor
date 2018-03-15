@@ -17,8 +17,8 @@ class Manager(object):
     A path chooser is an object with the following methods:
 
         take(stream_event: stem.response.events.StreamEvent) -> path: tuple of fingerprints
-            Called to assign a path to a new stream. If a circuit with this path already exists,
-            it is re-used, otherwise a new circuit is created.
+            Called to assign a path to a new stream. If a circuit with this path
+            already exists, it is re-used, otherwise a new circuit is created.
 
         release(path: tuple of fingerprints, failed=False)
             Called when a stream is closed with the path of that stream.
@@ -30,9 +30,9 @@ class Manager(object):
         self.path_chooser = path_chooser
         self.logger = logger.getChild(repr(self))
 
-        self.waiting_build = bidict()
-        self.attached = bidict()
-        self.paths = dict()
+        self.waiting_build = bidict() # stream_id -> circuit_id
+        self.attached = bidict() # stream_id -> circuit_id
+        self.paths = dict() # circuit_id -> path
 
         self.lock = RLock()
 
@@ -44,10 +44,12 @@ class Manager(object):
         """Start managing paths."""
         if self.started:
             raise ValueError('{} already started.'.format(self))
+        if self.stopped:
+            raise ValueError('{} already stopped.'.format(self))
         self.ctrl.add_event_listener(self.handle_stream, EventType.STREAM)
         self.ctrl.add_event_listener(self.handle_circuit, EventType.CIRC)
         self.started = True
-    
+
 
     def stop(self):
         """Start managing paths."""

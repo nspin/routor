@@ -1,12 +1,11 @@
 import sys
 import time
 import logging
-from datetime import timedelta
 
 from stem.control import Controller
 
 from routor import Manager
-from routor.choosers import ScrapePathChooser
+from routor.choosers import PerspectivesPathChooser
 
 root = logging.getLogger()
 hdlr = logging.StreamHandler(sys.stderr)
@@ -14,10 +13,10 @@ hdlr.addFilter(logging.Filter('routor'))
 root.addHandler(hdlr)
 root.setLevel(logging.DEBUG)
 
-middle = 'BC630CBBB518BE7E9F4E09712AB0269E9DC7D626'
+middle = 'D8FF84E5E29A92F09F8263D4662627ECC479B108'
 ctrl = Controller.from_port(port=9051)
 ctrl.authenticate()
-Manager(ctrl, ScrapePathChooser(ctrl, middle, wait_time=timedelta(minutes=2))).start()
+Manager(ctrl, PerspectivesPathChooser(ctrl, middle)).start()
 
 while True:
     time.sleep(1337)

@@ -61,9 +61,7 @@ class PerspectivesPathChooser(object):
         return (self.middle, exit)
 
     def release(self, path, failed=False):
-        exit = path[-1]
-        if failed:
-            self.bad.add(exit)
+        pass
 
 
 class ScrapePathChooser(object):
